@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { getAuth, isGoogleEnabled } from "./auth.js";
 import { db } from "./deps.js";
+import { episodeRoutes } from "./episodes/routes.js";
 import { NoActiveOrgError, type Variables, requireSession } from "./middleware/session.js";
 
 export function createApp() {
@@ -29,6 +30,8 @@ export function createApp() {
   app.on(["GET", "POST"], "/auth/*", (c) => getAuth().handler(c.req.raw));
 
   app.get("/me", requireSession, (c) => c.json({ user: c.get("user"), orgId: c.get("orgId") }));
+
+  app.route("/episodes", episodeRoutes());
 
   app.onError((err, c) => {
     if (err instanceof NoActiveOrgError) return c.json({ error: err.message }, 409);

@@ -5,7 +5,7 @@ export default defineConfig({
   // drizzle-kit loads schema modules through CJS and cannot resolve the
   // ESM-style "./x.js" re-exports the aggregator uses. Add each new slice's
   // schema file here.
-  schema: ["./src/auth-schema.ts"],
+  schema: ["./src/auth-schema.ts", "./src/app-schema.ts"],
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {

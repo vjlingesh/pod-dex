@@ -134,6 +134,55 @@ button.link {
   font-size: 0.85rem;
 }
 
+.brand {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.spacer {
+  flex: 1;
+}
+
+table.list {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+table.list th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--muted);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+table.list td {
+  padding: 0.6rem 0.5rem 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-ready {
+  border-color: #2f6f4f;
+  color: #7ee2b0;
+}
+
+.status-failed {
+  border-color: #6f2f2f;
+  color: #ff8a8a;
+}
+
 .error {
   margin: 0;
   color: #ff8a8a;
