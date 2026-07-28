@@ -45,6 +45,17 @@
 - `drizzle.config.ts` lists schema files explicitly — drizzle-kit loads them through CJS and cannot
   resolve the aggregator's `./x.js` re-exports. Add each new slice's schema file to that list.
 
+## Pipeline notes
+- Queues live in `packages/queue`. Job payloads carry ids only — never audio, transcripts or blobs.
+- Job ids are derived from the episode id so a double-enqueue collapses to one job. BullMQ reserves `:`
+  inside custom job ids, so separators are `-`.
+- Jobs retry three times with exponential backoff and are kept in the failed set afterwards. Conditions
+  that cannot succeed on retry throw `NonRetryableJobError` instead of burning attempts.
+- The worker fetches audio through a presigned GET, never a public URL.
+- Vendor packages (`@pod-dex/transcription`, and the LLM equivalent) pick a real provider when its API
+  key is set and a deterministic offline fake otherwise, decided per call. The fake produces a plausible
+  two-speaker interview so every downstream slice can be exercised without network or spend.
+
 ## Patterns
 - TDD: one test → one implementation (vertical slices). Tests hit public interfaces (Hono `app.request()`, exported functions). No testing private internals.
 - Hono apps export the app object; tests call `app.request()` directly — no listening server in tests.

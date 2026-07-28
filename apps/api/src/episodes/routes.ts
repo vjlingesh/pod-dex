@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { enqueueTranscription } from "@pod-dex/queue";
 import {
   UploadTooLargeError,
   audioKey,
@@ -110,6 +111,10 @@ export function episodeRoutes() {
       audioBytes: stat.size,
       audioContentType: stat.contentType ?? episode.audioContentType,
     });
+
+    // Queued only after the row is `pending`, so the worker can never pick up an
+    // episode whose audio has not been confirmed.
+    await enqueueTranscription({ episodeId: episode.id, orgId });
 
     return c.json({ episode: updated });
   });

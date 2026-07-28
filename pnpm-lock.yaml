@@ -23,6 +23,9 @@ importers:
       '@pod-dex/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@pod-dex/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
       '@pod-dex/storage':
         specifier: workspace:*
         version: link:../../packages/storage
@@ -112,6 +115,18 @@ importers:
       '@pod-dex/queue':
         specifier: workspace:*
         version: link:../../packages/queue
+      '@pod-dex/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
+      '@pod-dex/transcription':
+        specifier: workspace:*
+        version: link:../../packages/transcription
+      bullmq:
+        specifier: ^5.34.2
+        version: 5.81.2
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(@electric-sql/pglite@0.2.17)(kysely@0.29.4)(postgres@3.4.9)
     devDependencies:
       '@types/node':
         specifier: ^22.10.1
@@ -200,6 +215,25 @@ importers:
       '@aws-sdk/s3-request-presigner':
         specifier: ^3.700.0
         version: 3.1096.0
+      '@pod-dex/env':
+        specifier: workspace:*
+        version: link:../env
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.1
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)
+
+  packages/transcription:
+    dependencies:
+      '@pod-dex/db':
+        specifier: workspace:*
+        version: link:../db
       '@pod-dex/env':
         specifier: workspace:*
         version: link:../env

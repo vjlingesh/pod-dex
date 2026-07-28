@@ -20,6 +20,10 @@ vi.mock("@pod-dex/storage", async (importOriginal) => {
   };
 });
 
+// Enqueueing is a side effect of completing an upload; asserted here rather
+// than exercised against a real Redis.
+vi.mock("@pod-dex/queue", () => ({ enqueueTranscription: vi.fn() }));
+
 vi.mock("./repo.js", () => ({
   createEpisode: vi.fn(),
   findEpisode: vi.fn(),
@@ -28,6 +32,7 @@ vi.mock("./repo.js", () => ({
 }));
 
 const storage = await import("@pod-dex/storage");
+const queue = await import("@pod-dex/queue");
 const repo = await import("./repo.js");
 const { episodeRoutes } = await import("./routes.js");
 
@@ -131,6 +136,10 @@ describe("POST /episodes/:id/upload-complete", () => {
       "ep_1",
       { status: "pending", audioBytes: 1234 },
     ]);
+    expect(queue.enqueueTranscription).toHaveBeenCalledWith({
+      episodeId: "ep_1",
+      orgId: "org_1",
+    });
   });
 
   it("does not advance the episode when nothing was actually uploaded", async () => {

@@ -1,26 +1,21 @@
 {
-  "name": "@pod-dex/worker",
+  "name": "@pod-dex/transcription",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "start": "tsx src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@pod-dex/db": "workspace:*",
-    "@pod-dex/env": "workspace:*",
-    "@pod-dex/queue": "workspace:*",
-    "@pod-dex/storage": "workspace:*",
-    "@pod-dex/transcription": "workspace:*",
-    "bullmq": "^5.34.2",
-    "drizzle-orm": "^0.45.2"
+    "@pod-dex/env": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
-    "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }

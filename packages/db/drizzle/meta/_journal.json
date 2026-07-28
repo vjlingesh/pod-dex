@@ -15,6 +15,13 @@
       "when": 1785259632069,
       "tag": "0001_clumsy_titania",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785260113150,
+      "tag": "0002_adorable_titanium_man",
+      "breakpoints": true
     }
   ]
 }
