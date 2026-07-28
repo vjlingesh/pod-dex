@@ -10,3 +10,8 @@ coverage/
 .turbo/
 .wrangler/
 .dev.vars
+
+# agent scratch worktrees and local dev runtime state
+.claude/worktrees/
+.logs/
+.pids/

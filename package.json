@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild", "msgpackr-extract"]
   }
 }
