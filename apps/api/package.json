@@ -11,7 +11,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@hono/node-server": "^1.13.7",
+    "@hono/node-server": "^2.0.10",
     "@pod-dex/db": "workspace:*",
     "@pod-dex/env": "workspace:*",
     "@pod-dex/queue": "workspace:*",
@@ -24,6 +24,6 @@
     "@types/node": "^22.10.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "vitest": "^3.2.6"
   }
 }
