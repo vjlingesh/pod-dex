@@ -1,6 +1,6 @@
 // Application tables. Every one of them carries `organization_id` and every query
 // against them is org-scoped — see AGENTS.md.
-import { bigint, index, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, boolean, index, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { organization, user } from "./auth-schema.js";
 
 /**
@@ -95,5 +95,60 @@ export const transcripts = pgTable(
   (table) => [
     index("transcripts_org_idx").on(table.organizationId),
     index("transcripts_episode_idx").on(table.episodeId),
+  ],
+);
+
+/**
+ * Content formats produced from a transcript. Show notes ship first (issue #8);
+ * the rest arrive in #10.
+ */
+export const outputKinds = [
+  "show_notes",
+  "linkedin_posts",
+  "newsletter_blurb",
+  "blog_post",
+] as const;
+
+export type OutputKind = (typeof outputKinds)[number];
+
+/** A timestamped chapter within an episode, rendered as part of the show notes. */
+export type Chapter = {
+  /** Seconds from the start of the episode. */
+  start: number;
+  /** Same instant as MM:SS, precomputed so the UI never has to reformat. */
+  label: string;
+  title: string;
+};
+
+export type OutputBody = {
+  /** Markdown, ready to copy. */
+  markdown: string;
+  chapters?: Chapter[];
+  /** LinkedIn posts and case-study angles arrive as a list rather than one blob. */
+  items?: string[];
+};
+
+export const outputs = pgTable(
+  "outputs",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    episodeId: text("episode_id")
+      .notNull()
+      .references(() => episodes.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    title: text("title").notNull(),
+    body: jsonb("body").$type<OutputBody>().notNull(),
+    /** Which model produced it, so a regeneration is attributable. */
+    generatedBy: text("generated_by"),
+    markedUsed: boolean("marked_used").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("outputs_org_idx").on(table.organizationId),
+    index("outputs_episode_idx").on(table.episodeId),
   ],
 );

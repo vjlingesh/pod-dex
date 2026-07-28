@@ -1,5 +1,7 @@
 import { loadEnv, numberEnv } from "@pod-dex/env";
 import {
+  GENERATION_QUEUE,
+  type GenerationJob,
   TRANSCRIPTION_QUEUE,
   type TranscriptionJob,
   checkQueueHealth,
@@ -8,6 +10,7 @@ import {
   getConnection,
 } from "@pod-dex/queue";
 import { Worker } from "bullmq";
+import { runGeneration } from "./jobs/generate.js";
 import { runTranscription } from "./jobs/transcribe.js";
 
 loadEnv();
@@ -27,17 +30,27 @@ async function main() {
     { connection, concurrency },
   );
 
-  transcription.on("failed", (job, err) => {
-    console.error(`[${TRANSCRIPTION_QUEUE}] job ${job?.id} failed:`, err.message);
-  });
-  transcription.on("completed", (job) => {
-    console.log(`[${TRANSCRIPTION_QUEUE}] job ${job.id} done`);
-  });
+  const generation = new Worker<GenerationJob>(
+    GENERATION_QUEUE,
+    async (job) => runGeneration(job.data),
+    { connection, concurrency },
+  );
 
-  console.log(`worker online — ${TRANSCRIPTION_QUEUE}, concurrency ${concurrency}`);
+  for (const worker of [transcription, generation]) {
+    worker.on("failed", (job, err) => {
+      console.error(`[${worker.name}] job ${job?.id} failed:`, err.message);
+    });
+    worker.on("completed", (job) => {
+      console.log(`[${worker.name}] job ${job.id} done`);
+    });
+  }
+
+  console.log(
+    `worker online — ${TRANSCRIPTION_QUEUE} and ${GENERATION_QUEUE}, concurrency ${concurrency}`,
+  );
 
   const shutdown = async () => {
-    await transcription.close();
+    await Promise.all([transcription.close(), generation.close()]);
     await closeQueues();
     await closeConnection();
     process.exit(0);

@@ -1,6 +1,7 @@
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import { signOut } from "./auth-client.js";
 import { CreateWorkspacePage } from "./pages/CreateWorkspacePage.js";
+import { EpisodePage } from "./pages/EpisodePage.js";
 import { EpisodesPage } from "./pages/EpisodesPage.js";
 import { SignInPage } from "./pages/SignInPage.js";
 import { useMe } from "./session.js";
@@ -27,6 +28,7 @@ function Shell({ email }: { email: string }) {
 
       <Routes>
         <Route path="/" element={<EpisodesPage onOpen={(id) => navigate(`/episodes/${id}`)} />} />
+        <Route path="/episodes/:id" element={<EpisodePage />} />
       </Routes>
     </>
   );

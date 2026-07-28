@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { enqueueTranscription } from "@pod-dex/queue";
+import { enqueueGeneration, enqueueTranscription } from "@pod-dex/queue";
 import {
   UploadTooLargeError,
   audioKey,
@@ -9,6 +9,7 @@ import {
 } from "@pod-dex/storage";
 import { Hono } from "hono";
 import { type Variables, requireOrg, requireSession } from "../middleware/session.js";
+import { findTranscript, listOutputs, setOutputUsed } from "./outputs-repo.js";
 import { createEpisode, findEpisode, listEpisodes, updateEpisode } from "./repo.js";
 
 type UploadUrlBody = {
@@ -28,6 +29,55 @@ export function episodeRoutes() {
   routes.get("/:id", async (c) => {
     const episode = await findEpisode(requireOrg(c), c.req.param("id"));
     return episode ? c.json({ episode }) : c.json({ error: "not found" }, 404);
+  });
+
+  routes.get("/:id/outputs", async (c) => {
+    const orgId = requireOrg(c);
+    const episodeId = c.req.param("id");
+
+    const episode = await findEpisode(orgId, episodeId);
+    if (!episode) return c.json({ error: "not found" }, 404);
+
+    return c.json({ outputs: await listOutputs(orgId, episodeId) });
+  });
+
+  routes.get("/:id/transcript", async (c) => {
+    const orgId = requireOrg(c);
+
+    const episode = await findEpisode(orgId, c.req.param("id"));
+    if (!episode) return c.json({ error: "not found" }, 404);
+
+    const transcript = await findTranscript(orgId, episode.id);
+    return transcript ? c.json({ transcript }) : c.json({ error: "no transcript yet" }, 404);
+  });
+
+  /** Mark-as-used is a per-output toggle the user drives from the outputs page. */
+  routes.patch("/:id/outputs/:outputId", async (c) => {
+    const orgId = requireOrg(c);
+    const body = (await c.req.json().catch(() => ({}))) as { markedUsed?: unknown };
+
+    if (typeof body.markedUsed !== "boolean") {
+      return c.json({ error: "markedUsed must be a boolean" }, 400);
+    }
+
+    const updated = await setOutputUsed(orgId, c.req.param("outputId"), body.markedUsed);
+    return updated ? c.json({ output: updated }) : c.json({ error: "not found" }, 404);
+  });
+
+  /** Re-runs generation for an episode that already has a transcript. */
+  routes.post("/:id/regenerate", async (c) => {
+    const orgId = requireOrg(c);
+
+    const episode = await findEpisode(orgId, c.req.param("id"));
+    if (!episode) return c.json({ error: "not found" }, 404);
+
+    const transcript = await findTranscript(orgId, episode.id);
+    if (!transcript) return c.json({ error: "episode has no transcript yet" }, 409);
+
+    await updateEpisode(orgId, episode.id, { status: "generating", error: null });
+    await enqueueGeneration({ episodeId: episode.id, orgId, regenerate: true });
+
+    return c.json({ ok: true });
   });
 
   /**

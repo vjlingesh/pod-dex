@@ -112,6 +112,9 @@ importers:
       '@pod-dex/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@pod-dex/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
       '@pod-dex/queue':
         specifier: workspace:*
         version: link:../../packages/queue
@@ -184,6 +187,22 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+
+  packages/llm:
+    dependencies:
+      '@pod-dex/env':
+        specifier: workspace:*
+        version: link:../env
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.1
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.20.1)(jsdom@25.0.1)
 
   packages/queue:
     dependencies:

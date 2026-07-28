@@ -127,3 +127,36 @@ function putWithProgress(
     xhr.send(file);
   });
 }
+
+export type Chapter = { start: number; label: string; title: string };
+
+export type OutputBody = {
+  markdown: string;
+  chapters?: Chapter[];
+  items?: string[];
+};
+
+export type Output = {
+  id: string;
+  kind: string;
+  title: string;
+  body: OutputBody;
+  generatedBy: string | null;
+  markedUsed: boolean;
+  createdAt: string;
+};
+
+export const listOutputs = (episodeId: string) =>
+  apiFetch<{ outputs: Output[] }>(`/episodes/${episodeId}/outputs`).then((r) => r.outputs);
+
+export const setOutputUsed = (episodeId: string, outputId: string, markedUsed: boolean) =>
+  apiFetch<{ output: Output }>(`/episodes/${episodeId}/outputs/${outputId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ markedUsed }),
+  }).then((r) => r.output);
+
+export const regenerate = (episodeId: string) =>
+  apiFetch<{ ok: boolean }>(`/episodes/${episodeId}/regenerate`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });

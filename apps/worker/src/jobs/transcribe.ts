@@ -1,4 +1,4 @@
-import type { TranscriptionJob } from "@pod-dex/queue";
+import { type TranscriptionJob, enqueueGeneration } from "@pod-dex/queue";
 import { presignDownload } from "@pod-dex/storage";
 import { transcribe } from "@pod-dex/transcription";
 import { loadEpisode, saveTranscript, setEpisodeStatus } from "../db.js";
@@ -30,6 +30,9 @@ export async function runTranscription(job: TranscriptionJob): Promise<void> {
     await setEpisodeStatus(orgId, episodeId, "transcribed", {
       durationSeconds: result.durationSeconds,
     });
+
+    // The tracer bullet continues: a transcribed episode becomes a generation job.
+    await enqueueGeneration({ episodeId, orgId });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await setEpisodeStatus(orgId, episodeId, "failed", { error: message.slice(0, 1000) });

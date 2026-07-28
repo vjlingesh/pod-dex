@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { type Database, getDb, schema } from "@pod-dex/db";
+import { isLlmLive } from "@pod-dex/llm";
 import type { TranscriptResult } from "@pod-dex/transcription";
 import { and, eq } from "drizzle-orm";
 
@@ -86,4 +87,54 @@ export async function loadTranscript(orgId: string, episodeId: string) {
     .limit(1);
 
   return row ?? null;
+}
+
+export type GeneratedOutput = {
+  kind: string;
+  title: string;
+  body: typeof schema.outputs.$inferInsert.body;
+};
+
+/**
+ * Swaps in a fresh set of outputs for the episode. Kinds present in `next`
+ * replace their previous version; kinds absent from it are left alone, so a
+ * partial regeneration cannot silently delete outputs it did not produce.
+ *
+ * The `marked_used` flag is deliberately not carried over — regenerated content
+ * is new content, and claiming the user already used it would be a lie.
+ */
+export async function replaceOutputs(
+  orgId: string,
+  episodeId: string,
+  next: GeneratedOutput[],
+): Promise<void> {
+  if (next.length === 0) return;
+
+  await db().transaction(async (tx) => {
+    for (const output of next) {
+      await tx
+        .delete(schema.outputs)
+        .where(
+          and(
+            eq(schema.outputs.organizationId, orgId),
+            eq(schema.outputs.episodeId, episodeId),
+            eq(schema.outputs.kind, output.kind),
+          ),
+        );
+
+      await tx.insert(schema.outputs).values({
+        id: randomUUID(),
+        organizationId: orgId,
+        episodeId,
+        kind: output.kind,
+        title: output.title,
+        body: output.body,
+        generatedBy: llmLabel(),
+      });
+    }
+  });
+}
+
+function llmLabel(): string {
+  return isLlmLive() ? "openrouter" : "fake";
 }

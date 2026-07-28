@@ -12,6 +12,7 @@
   "dependencies": {
     "@pod-dex/db": "workspace:*",
     "@pod-dex/env": "workspace:*",
+    "@pod-dex/llm": "workspace:*",
     "@pod-dex/queue": "workspace:*",
     "@pod-dex/storage": "workspace:*",
     "@pod-dex/transcription": "workspace:*",

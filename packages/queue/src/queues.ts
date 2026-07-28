@@ -65,9 +65,7 @@ export async function enqueueGeneration(job: GenerationJob): Promise<void> {
   await generationQueue().add("generate", job, {
     // A regeneration is a deliberate rerun, so it gets a fresh id rather than
     // being deduplicated against the original job.
-    jobId: job.regenerate
-      ? `generate-${job.episodeId}-${Date.now()}`
-      : `generate-${job.episodeId}`,
+    jobId: job.regenerate ? `generate-${job.episodeId}-${Date.now()}` : `generate-${job.episodeId}`,
   });
 }
 
