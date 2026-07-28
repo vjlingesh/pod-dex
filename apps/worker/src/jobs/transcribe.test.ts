@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// Without this the job's enqueueGeneration call opens a real Redis connection,
+// which makes the suite depend on running infrastructure and on a populated
+// .env — neither of which holds in a fresh worktree or a clean CI job.
+vi.mock("@pod-dex/queue", () => ({ enqueueGeneration: vi.fn() }));
 vi.mock("@pod-dex/storage", () => ({ presignDownload: vi.fn() }));
 vi.mock("@pod-dex/transcription", () => ({ transcribe: vi.fn() }));
 vi.mock("../db.js", () => ({
@@ -8,6 +12,7 @@ vi.mock("../db.js", () => ({
   setEpisodeStatus: vi.fn(),
 }));
 
+const queue = await import("@pod-dex/queue");
 const storage = await import("@pod-dex/storage");
 const transcription = await import("@pod-dex/transcription");
 const db = await import("../db.js");
@@ -48,6 +53,20 @@ describe("runTranscription", () => {
       "transcribing",
       "transcribed",
     ]);
+  });
+
+  it("hands the episode on to generation once the transcript is stored", async () => {
+    await runTranscription(job);
+
+    expect(queue.enqueueGeneration).toHaveBeenCalledWith({ episodeId: "ep_1", orgId: "org_1" });
+  });
+
+  it("does not enqueue generation when transcription failed", async () => {
+    vi.mocked(transcription.transcribe).mockRejectedValue(new Error("nope"));
+
+    await expect(runTranscription(job)).rejects.toThrow("nope");
+
+    expect(queue.enqueueGeneration).not.toHaveBeenCalled();
   });
 
   it("fetches the audio through a signed url rather than a public one", async () => {
