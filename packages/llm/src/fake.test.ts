@@ -28,7 +28,7 @@ describe("the offline fake", () => {
   });
 
   it("keeps titles short", async () => {
-    const prompt = "1. " + "word ".repeat(40);
+    const prompt = `1. ${"word ".repeat(40)}`;
 
     const title = (await ask("chapter-titles", prompt)).replace(/^\d+\.\s*/, "");
 
