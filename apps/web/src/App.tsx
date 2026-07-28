@@ -1,4 +1,4 @@
-import { Link, Route, Routes, useNavigate } from "react-router-dom";
+import { Link, Route, Routes, useNavigate } from "react-router";
 import { signOut } from "./auth-client.js";
 import { CreateWorkspacePage } from "./pages/CreateWorkspacePage.js";
 import { EpisodePage } from "./pages/EpisodePage.js";
