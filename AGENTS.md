@@ -25,6 +25,13 @@
   runs offline. Set a key to exercise the real vendor.
 - Repo-root `.env` is the single source of config; `@pod-dex/env` loads it from any workspace package.
 
+## Known dependency debt
+- `drizzle-kit` (0.31.10, current latest) still pulls the deprecated `@esbuild-kit/*` chain, which pins
+  `esbuild@0.18.20` and keeps GHSA-67mh-4wv8-2f99 open. No published drizzle-kit fixes it, and forcing an
+  override across a 0.18 → 0.25 esbuild jump risks breaking migration generation. The advisory is about
+  esbuild's dev server reading cross-origin responses; drizzle-kit only bundles a config file and never
+  serves, so it is not reachable here. Revisit when drizzle-kit drops `@esbuild-kit`.
+
 ## Architecture rules
 - Every tenant-owned table carries `org_id`. Every query is org-scoped. No exceptions.
 - API never proxies audio bytes — client uploads direct to R2 via presigned URL.
