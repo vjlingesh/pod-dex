@@ -24,6 +24,15 @@
   and Stripe fall back to deterministic fakes when their API key env vars are blank, so the whole pipeline
   runs offline. Set a key to exercise the real vendor.
 - Repo-root `.env` is the single source of config; `@pod-dex/env` loads it from any workspace package.
+  It is gitignored, so a fresh git worktree has none — copy it in before running tests there.
+- `make seed` (after `make up`) loads a demo workspace: sign in as `demo@pod-dex.local` /
+  `demo-password-123`. It drives the real HTTP API rather than writing rows, so it doubles as an
+  end-to-end smoke test, and it creates episodes in every interesting state — two `ready`, one stranded
+  at `uploading`, and one `ready` whose audio has been deleted to exercise the 30-day expiry path.
+- Seed audio is real speech, spoken by two macOS voices from the same script the offline transcriber
+  returns, so timestamps can be checked by ear. `say -r` is only loosely honoured and responds
+  sub-linearly, so the renderer measures and re-renders until the duration matches the transcript.
+  Without `say`/`ffmpeg` it falls back to silent placeholder bytes and warns.
 
 ## Known dependency debt
 - `drizzle-kit` (0.31.10, current latest) still pulls the deprecated `@esbuild-kit/*` chain, which pins

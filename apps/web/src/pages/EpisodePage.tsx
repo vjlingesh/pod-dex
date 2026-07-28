@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import {
   type Episode,
@@ -8,6 +8,7 @@ import {
   regenerate,
   setOutputUsed,
 } from "../api.js";
+import { AudioPlayer } from "../components/AudioPlayer.js";
 import { OutputCard } from "../components/OutputCard.js";
 
 const WORKING = new Set(["uploading", "pending", "transcribing", "generating"]);
@@ -17,6 +18,7 @@ export function EpisodePage() {
   const [episode, setEpisode] = useState<Episode | null>(null);
   const [outputs, setOutputs] = useState<Output[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const refresh = useCallback(async () => {
     if (!id) return;
@@ -40,6 +42,16 @@ export function EpisodePage() {
     const timer = setInterval(() => void refresh(), 2500);
     return () => clearInterval(timer);
   }, [episode, refresh]);
+
+  /** Jumps the player to a chapter and starts it, so a timestamp is one click. */
+  function seek(seconds: number) {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = seconds;
+    void audio.play().catch(() => {
+      // Autoplay can be refused; the seek still happened, so leave it paused.
+    });
+  }
 
   async function toggleUsed(output: Output, markedUsed: boolean) {
     // Optimistic, then reconciled against what the server actually stored.
@@ -97,11 +109,14 @@ export function EpisodePage() {
         </section>
       )}
 
+      <AudioPlayer ref={audioRef} episodeId={id} title={episode.title} />
+
       {outputs.map((output) => (
         <OutputCard
           key={output.id}
           output={output}
           onToggleUsed={(markedUsed) => toggleUsed(output, markedUsed)}
+          onSeek={seek}
         />
       ))}
 

@@ -237,3 +237,31 @@ label.checkbox input {
   width: auto;
   accent-color: var(--accent);
 }
+
+.player {
+  width: 100%;
+}
+
+.chapters {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.chapters li {
+  display: flex;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  min-width: 3.5rem;
+}
+
+.chapter-title {
+  font-size: 0.9rem;
+}

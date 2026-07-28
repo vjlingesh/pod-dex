@@ -3,6 +3,8 @@ import { enqueueGeneration, enqueueTranscription } from "@pod-dex/queue";
 import {
   UploadTooLargeError,
   audioKey,
+  keyBelongsToOrg,
+  presignDownload,
   presignUpload,
   statObject,
   storageConfig,
@@ -39,6 +41,41 @@ export function episodeRoutes() {
     if (!episode) return c.json({ error: "not found" }, 404);
 
     return c.json({ outputs: await listOutputs(orgId, episodeId) });
+  });
+
+  /**
+   * Short-lived signed URL for the source audio, used by the player and the
+   * download button. The API hands out a URL rather than the bytes, for the same
+   * reason uploads bypass it: audio never passes through this process.
+   *
+   * Audio is deleted after 30 days while transcripts are kept indefinitely, so a
+   * missing object is an expected end state for an old episode, not an error —
+   * hence 410 rather than 404, which lets the UI say "expired" instead of
+   * "broken".
+   */
+  routes.get("/:id/audio-url", async (c) => {
+    const orgId = requireOrg(c);
+
+    const episode = await findEpisode(orgId, c.req.param("id"));
+    if (!episode) return c.json({ error: "not found" }, 404);
+    if (!episode.audioKey) return c.json({ error: "episode has no audio" }, 404);
+
+    // Belt and braces: the key was built from this org's prefix, but the check
+    // is cheap and a leaked key must never be signable by another tenant.
+    if (!keyBelongsToOrg(episode.audioKey, orgId)) {
+      return c.json({ error: "not found" }, 404);
+    }
+
+    if (!(await statObject(episode.audioKey))) {
+      return c.json({ error: "audio has expired", expired: true }, 410);
+    }
+
+    const expiresIn = 900;
+    return c.json({
+      url: await presignDownload(episode.audioKey, expiresIn),
+      expiresIn,
+      contentType: episode.audioContentType,
+    });
   });
 
   routes.get("/:id/transcript", async (c) => {

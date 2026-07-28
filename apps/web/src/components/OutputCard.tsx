@@ -4,9 +4,11 @@ import type { Output } from "../api.js";
 type Props = {
   output: Output;
   onToggleUsed: (markedUsed: boolean) => void | Promise<void>;
+  /** Absent when there is no audio to seek — chapters then render as plain text. */
+  onSeek?: (seconds: number) => void;
 };
 
-export function OutputCard({ output, onToggleUsed }: Props) {
+export function OutputCard({ output, onToggleUsed, onSeek }: Props) {
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
 
@@ -45,6 +47,23 @@ export function OutputCard({ output, onToggleUsed }: Props) {
         <p className="error small" role="alert">
           Could not reach the clipboard — select the text below and copy manually.
         </p>
+      )}
+
+      {output.body.chapters && output.body.chapters.length > 0 && (
+        <ol className="chapters">
+          {output.body.chapters.map((chapter) => (
+            <li key={chapter.start}>
+              {onSeek ? (
+                <button type="button" className="link mono" onClick={() => onSeek(chapter.start)}>
+                  {chapter.label}
+                </button>
+              ) : (
+                <span className="mono muted">{chapter.label}</span>
+              )}
+              <span className="chapter-title">{chapter.title}</span>
+            </li>
+          ))}
+        </ol>
       )}
 
       <pre className="output-body">{output.body.markdown}</pre>

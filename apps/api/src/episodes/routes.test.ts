@@ -15,6 +15,7 @@ vi.mock("@pod-dex/storage", async (importOriginal) => {
   return {
     ...actual,
     presignUpload: vi.fn(),
+    presignDownload: vi.fn(),
     statObject: vi.fn(),
     storageConfig: () => ({ maxUploadBytes: 500 * 1024 * 1024 }),
   };
@@ -113,6 +114,57 @@ describe("POST /episodes/upload-url", () => {
 
     expect(res.status).toBe(409);
     expect(repo.createEpisode).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /episodes/:id/audio-url", () => {
+  const episode = {
+    id: "ep_1",
+    audioKey: "orgs/org_1/episodes/ep_1/audio/ep.mp3",
+    audioContentType: "audio/mpeg",
+  };
+
+  const get = (path: string) => app().request(path);
+
+  it("signs a url for audio that is still stored", async () => {
+    vi.mocked(repo.findEpisode).mockResolvedValue(episode as never);
+    vi.mocked(storage.statObject).mockResolvedValue({ size: 100, contentType: "audio/mpeg" });
+    vi.mocked(storage.presignDownload).mockResolvedValue("https://s3.test/get");
+
+    const res = await get("/episodes/ep_1/audio-url");
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({ url: "https://s3.test/get" });
+  });
+
+  it("reports 410 rather than 404 once the audio has been aged out", async () => {
+    vi.mocked(repo.findEpisode).mockResolvedValue(episode as never);
+    vi.mocked(storage.statObject).mockResolvedValue(null);
+
+    const res = await get("/episodes/ep_1/audio-url");
+
+    // The distinction matters: the UI says "expired", not "broken".
+    expect(res.status).toBe(410);
+    expect(await res.json()).toMatchObject({ expired: true });
+    expect(storage.presignDownload).not.toHaveBeenCalled();
+  });
+
+  it("refuses to sign a key belonging to another org", async () => {
+    vi.mocked(repo.findEpisode).mockResolvedValue({
+      ...episode,
+      audioKey: "orgs/org_2/episodes/ep_1/audio/ep.mp3",
+    } as never);
+
+    const res = await get("/episodes/ep_1/audio-url");
+
+    expect(res.status).toBe(404);
+    expect(storage.presignDownload).not.toHaveBeenCalled();
+  });
+
+  it("404s for an episode that is not the caller's", async () => {
+    vi.mocked(repo.findEpisode).mockResolvedValue(null);
+
+    expect((await get("/episodes/someone-elses/audio-url")).status).toBe(404);
   });
 });
 

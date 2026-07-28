@@ -4,6 +4,7 @@ import { transcribeWithFake } from "./fake.js";
 import type { TranscribeInput, Transcriber, TranscriptResult } from "./types.js";
 
 export { groupIntoSegments } from "./deepgram.js";
+export { FAKE_SCRIPT, FAKE_TIMING } from "./fake.js";
 export { TranscriptionError } from "./types.js";
 export type { TranscribeInput, TranscriptResult, Transcriber } from "./types.js";
 

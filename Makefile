@@ -54,8 +54,8 @@ infra-down: ## Stop containers only, leave dev servers alone
 migrate: ## Apply database migrations
 	@pnpm --filter @pod-dex/db migrate
 
-seed: ## Load demo org, user and sample episode
-	@pnpm --filter @pod-dex/db seed
+seed: ## Load a demo workspace with generated audio and episodes (needs `make up` first)
+	@pnpm --filter @pod-dex/seed start
 
 servers: stop-servers ## Start api, worker, web and landing in the background
 	@mkdir -p $(LOGDIR) $(PIDDIR)

@@ -226,6 +226,31 @@ importers:
         specifier: ^3.2.6
         version: 3.2.7(@types/node@22.20.1)(jsdom@25.0.1)(tsx@4.23.1)
 
+  packages/seed:
+    dependencies:
+      '@pod-dex/env':
+        specifier: workspace:*
+        version: link:../env
+      '@pod-dex/storage':
+        specifier: workspace:*
+        version: link:../storage
+      '@pod-dex/transcription':
+        specifier: workspace:*
+        version: link:../transcription
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.1
+        version: 22.20.1
+      tsx:
+        specifier: ^4.19.2
+        version: 4.23.1
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.6
+        version: 3.2.7(@types/node@22.20.1)(jsdom@25.0.1)(tsx@4.23.1)
+
   packages/storage:
     dependencies:
       '@aws-sdk/client-s3':

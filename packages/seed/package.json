@@ -1,27 +1,20 @@
 {
-  "name": "@pod-dex/db",
+  "name": "@pod-dex/seed",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./schema": "./src/schema.ts"
-  },
   "scripts": {
-    "generate": "drizzle-kit generate",
-    "migrate": "tsx src/migrate.ts",
+    "start": "tsx src/main.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@pod-dex/env": "workspace:*",
-    "drizzle-orm": "^0.45.2",
-    "postgres": "^3.4.5"
+    "@pod-dex/storage": "workspace:*",
+    "@pod-dex/transcription": "workspace:*"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.2.14",
     "@types/node": "^22.10.1",
-    "drizzle-kit": "^0.31.10",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^3.2.6"

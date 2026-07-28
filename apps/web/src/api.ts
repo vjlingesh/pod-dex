@@ -160,3 +160,26 @@ export const regenerate = (episodeId: string) =>
     method: "POST",
     body: JSON.stringify({}),
   });
+
+export type AudioAccess =
+  | { status: "ready"; url: string; expiresIn: number }
+  | { status: "expired" }
+  | { status: "absent" };
+
+/**
+ * Audio is deleted after 30 days while transcripts are kept, so "gone" is an
+ * expected outcome rather than a failure. The three cases are modelled
+ * explicitly so the player can say which one happened.
+ */
+export async function getAudioAccess(episodeId: string): Promise<AudioAccess> {
+  try {
+    const res = await apiFetch<{ url: string; expiresIn: number }>(
+      `/episodes/${episodeId}/audio-url`,
+    );
+    return { status: "ready", ...res };
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 410) return { status: "expired" };
+    if (err instanceof ApiError && err.status === 404) return { status: "absent" };
+    throw err;
+  }
+}

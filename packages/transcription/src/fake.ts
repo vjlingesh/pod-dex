@@ -8,7 +8,7 @@ import type { TranscribeInput, TranscriptResult } from "./types.js";
  * with real timestamps and speaker labels — enough shape for the generation,
  * highlight and quote-card slices to be exercised end to end.
  */
-const SCRIPT: Array<[string, string]> = [
+export const FAKE_SCRIPT: Array<[string, string]> = [
   ["Speaker 0", "Welcome back to the show. Today we are talking about how teams actually ship."],
   ["Speaker 1", "Thanks for having me. It is a topic I have opinions about."],
   ["Speaker 0", "Let us start at the beginning. What was the first thing that broke as you grew?"],
@@ -35,15 +35,26 @@ const SCRIPT: Array<[string, string]> = [
   ["Speaker 1", "My pleasure."],
 ];
 
-const WORDS_PER_SECOND = 2.6;
+/**
+ * Timing model for the synthetic transcript. Exported because the seeder speaks
+ * the same script at this rate — matching timestamps to audible speech is what
+ * makes chapter seeking testable by ear.
+ */
+export const FAKE_TIMING = {
+  wordsPerSecond: 2.6,
+  /** Beat between speaker turns, so segment boundaries look real. */
+  gapSeconds: 0.6,
+  /** Silence before the first word. */
+  leadInSeconds: 0.5,
+};
 
 export async function transcribeWithFake(input: TranscribeInput): Promise<TranscriptResult> {
   const words: TranscriptWord[] = [];
-  let clock = 0.5;
+  let clock = FAKE_TIMING.leadInSeconds;
 
-  for (const [speaker, line] of SCRIPT) {
+  for (const [speaker, line] of FAKE_SCRIPT) {
     for (const token of line.split(/\s+/)) {
-      const duration = 1 / WORDS_PER_SECOND;
+      const duration = 1 / FAKE_TIMING.wordsPerSecond;
       words.push({
         word: token,
         start: Number(clock.toFixed(2)),
@@ -52,15 +63,14 @@ export async function transcribeWithFake(input: TranscribeInput): Promise<Transc
       });
       clock += duration;
     }
-    // A beat between speaker turns, so segment boundaries look real.
-    clock += 0.6;
+    clock += FAKE_TIMING.gapSeconds;
   }
 
   return {
     provider: "fake",
     model: null,
     language: "en",
-    fullText: SCRIPT.map(([, line]) => line).join(" "),
+    fullText: FAKE_SCRIPT.map(([, line]) => line).join(" "),
     segments: groupIntoSegments(words),
     words,
     durationSeconds: Math.ceil(clock),
