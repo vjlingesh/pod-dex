@@ -72,3 +72,70 @@ button:disabled {
 a {
   color: var(--accent);
 }
+
+.page.narrow {
+  max-width: 420px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+input {
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button.secondary {
+  margin-top: 0.85rem;
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+}
+
+button.link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+.error {
+  margin: 0;
+  color: #ff8a8a;
+  font-size: 0.85rem;
+}

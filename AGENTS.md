@@ -31,6 +31,20 @@
 - Workers communicate via BullMQ queues; job payloads carry IDs, not blobs.
 - Transcripts kept indefinitely; audio deleted after 30 days (R2 lifecycle rule).
 
+## Auth notes
+- Better Auth owns `user`, `session`, `account`, `verification`, `organization`, `member`, `invitation`.
+  Regenerate with `pnpm --filter @pod-dex/api auth:generate` — never hand-edit `packages/db/src/auth-schema.ts`.
+- `baseURL` is the API's own origin (8787), not the proxied `/api` path: Vite strips the prefix before
+  Hono sees the request. Cookies still reach the SPA on 5173 because cookies ignore port.
+- Active org lives on `session.activeOrganizationId`. A `databaseHooks.session.create.before` hook pins
+  it to the user's oldest membership at sign-in; `organization.setActive` changes it.
+- Routes read the org via `requireOrg(c)`, which throws rather than returning null — a missing org must
+  never silently widen a query across tenants.
+- Email/password sign-in is always enabled so local dev needs no Google credentials. Google appears only
+  when `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` are set; the SPA reads `GET /config` to know.
+- `drizzle.config.ts` lists schema files explicitly — drizzle-kit loads them through CJS and cannot
+  resolve the aggregator's `./x.js` re-exports. Add each new slice's schema file to that list.
+
 ## Patterns
 - TDD: one test → one implementation (vertical slices). Tests hit public interfaces (Hono `app.request()`, exported functions). No testing private internals.
 - Hono apps export the app object; tests call `app.request()` directly — no listening server in tests.
