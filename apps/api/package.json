@@ -18,7 +18,7 @@
     "@pod-dex/storage": "workspace:*",
     "better-auth": "^1.6.25",
     "drizzle-orm": "^0.45.2",
-    "hono": "^4.6.13"
+    "hono": "^4.12.34"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
